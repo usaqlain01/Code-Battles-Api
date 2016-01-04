@@ -4,8 +4,9 @@ namespace AppBundle\Controller\Api;
 
 use AppBundle\Controller\BaseController;
 use AppBundle\Entity\Programmer;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
+use AppBundle\Form\ProgrammerType;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -19,14 +20,19 @@ class ProgrammerController extends BaseController
     {
         $data = json_decode($request->getContent(), true);
         
-        $programmer = new Programmer($data['nickname'], $data['avatarNumber']);
-        $programmer->setTagLine($data['tagLine']);
+        $programmer = new Programmer();
+        $form = $this->createForm(new ProgrammerType(), $programmer);
+        $form->submit($data);
+        
         $programmer->setUser($this->findUserByUsername('usaqlain'));
         
         $em = $this->getDoctrine()->getManager();
         $em->persist($programmer);
         $em->flush();
         
-        return new Response($programmer->getId());
+        $response = new Response('working', 201);
+        $response->headers->set('Location', 'some/temp/url');
+        
+        return $response;
     }
 }
